@@ -32,6 +32,31 @@ app.post('/api/book', (req, res) => {
   res.json({ message: 'Booking successful!' });
 });
 
+// Delete a booking
+app.post('/api/delete', (req, res) => {
+  const deleteReq = req.body;
+
+  if (!fs.existsSync(BOOKINGS_FILE)) return res.status(404).json({ message: "No data file found." });
+
+  let bookings = JSON.parse(fs.readFileSync(BOOKINGS_FILE));
+
+  const newBookings = bookings.filter(
+    event =>
+      !(
+        event.title === deleteReq.title &&
+        event.start === deleteReq.start &&
+        event.end === deleteReq.end
+      )
+  );
+
+  if (newBookings.length === bookings.length) {
+    return res.status(404).json({ message: "Booking not found." });
+  }
+
+  fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(newBookings, null, 2));
+  res.json({ status: "success", message: "Booking deleted." });
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
